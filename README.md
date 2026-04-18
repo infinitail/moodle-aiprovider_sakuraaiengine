@@ -5,18 +5,31 @@
 ## Status
 
 - Component: `aiprovider_sakuraaiengine`
-- Plugin version: `2025102701`
-- Required Moodle version: `2025040800`
+- Plugin version: `2025102702`
+- Required Moodle version: `2024100700` (Moodle 4.5.0 or later)
 - Maturity: `MATURITY_ALPHA`
+
+## Compatibility
+
+This plugin is designed to run on both Moodle 4.5 and Moodle 5.0+, with defensive runtime branching.
+
+- Moodle 4.5:
+  - supports `generate_text`, `summarise_text`
+  - provider settings are defined via `settings.php`
+  - action settings are read from plugin config values (`action_<name>_*`)
+  - `explain_text` and per-model hook UI are disabled
+- Moodle 5.0+:
+  - supports `generate_text`, `summarise_text`, `explain_text`
+  - provider settings and model settings are provided via hooks (`db/hooks.php`, `classes/hook_listener.php`)
+  - provider instance action settings are read from `actionconfig`
 
 ## Features
 
-- Supports `generate_text`, `summarise_text`, and `explain_text`
-- Allows selecting a model per action
-- Supports extra model parameters via JSON
-- Authenticates with either:
-  - provider-level `account_token`
-  - `local_byoaitoken` when that plugin is installed
+- Supports text generation and summarization across Moodle 4.5/5.0+
+- Supports `explain_text` on Moodle 5.0+
+- Supports model selection and per-model settings on Moodle 5.0+
+- Supports extra model parameters via JSON (`modelextraparams`)
+- Authenticates with either provider-level `account_token` or `local_byoaitoken` (if installed)
 
 ## Repository Layout
 
@@ -40,14 +53,14 @@ When installing manually into Moodle, place the contents of `ai/provider/sakuraa
 
 ## Supported Models
 
-The repository currently includes these built-in model classes:
+The repository includes these built-in model classes:
 
 - `gpt_oss_120b`
 - `llm_jp_31_8x13b_instruct4`
 - `qwen3_coder_30b_a3b_instruct`
 - `qwen3_coder_480b_a35b_instruct_fp8`
 
-All built-in models are treated as text models.
+All built-in models are treated as text models. On Moodle 4.5, predefined model UI is not available and the model is configured via action config text settings.
 
 ## Configuration
 
@@ -55,7 +68,7 @@ Provider-level settings:
 
 - `account_token`
 
-Action-level settings:
+Action-level settings (Moodle 5.0+ form):
 
 - `modeltemplate` / `model`
 - `systeminstruction`
@@ -63,14 +76,23 @@ Action-level settings:
 - `temperature`
 - `modelextraparams`
 
+Action-level settings (Moodle 4.5 fallback):
+
+- `action_generate_text_model`
+- `action_generate_text_systeminstruction`
+- `action_summarise_text_model`
+- `action_summarise_text_systeminstruction`
+
 The `modelextraparams` field accepts a JSON object that is merged directly into the request payload sent to Sakura AI Engine.
 
 ## Implementation Notes
 
 - Provider entry point: `aiprovider_sakuraaiengine\provider`
+- Version branching helper: `aiprovider_sakuraaiengine\compat`
 - Request processing base class: `aiprovider_sakuraaiengine\abstract_processor`
 - Current text endpoint: `https://api.ai.sakura.ad.jp/v1/chat/completions`
 - `generate_image` remains intentionally disabled; commented code paths are left in place for future work
+- Defensive guards ensure Moodle 5.0-only hooks and APIs are not executed on Moodle 4.5
 
 ## Tests
 
@@ -91,7 +113,7 @@ This repository is structured for GitHub publication:
 - plugin source stays in the Moodle component path
 - GPL-3.0-or-later licensing is included in the repository root
 
-Before creating a public release, verify the supported Moodle version, plugin maturity, and bundled model list still match the current implementation.
+Before creating a public release, verify supported Moodle versions, runtime branch behavior, and bundled model list still match the current implementation.
 
 ## License
 
