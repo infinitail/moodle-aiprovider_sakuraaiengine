@@ -24,14 +24,24 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$callbacks = [
-    [
+$callbacks = [];
+
+// after_ai_provider_form_hook is available when Moodle uses the hook-based
+// provider settings UI (Moodle 5.0+). On Moodle 4.x the settings are
+// defined in settings.php instead.
+if (class_exists(\core_ai\hook\after_ai_provider_form_hook::class)) {
+    $callbacks[] = [
         'hook' => \core_ai\hook\after_ai_provider_form_hook::class,
         'callback' => \aiprovider_sakuraaiengine\hook_listener::class . '::set_form_definition_for_aiprovider_sakuraaiengine',
-    ],
-    [
+    ];
+}
+
+// after_ai_action_settings_form_hook was added in Moodle 5.0 (MDL-82980).
+// It enables per-model settings inside the action configuration form.
+if (class_exists(\core_ai\hook\after_ai_action_settings_form_hook::class)) {
+    $callbacks[] = [
         'hook' => \core_ai\hook\after_ai_action_settings_form_hook::class,
         'callback' => \aiprovider_sakuraaiengine\hook_listener::class
             . '::set_model_form_definition_for_aiprovider_sakuraaiengine',
-    ],
-];
+    ];
+}

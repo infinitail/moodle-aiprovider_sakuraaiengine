@@ -64,6 +64,12 @@ class action_generate_text_form extends action_form {
         $mform->addElement('hidden', 'providerid', $this->providerid);
         $mform->setType('providerid', PARAM_INT);
 
+        // On Moodle 5.0, action_settings_form automatically adds Save/Cancel
+        // buttons (MDL-82980). On Moodle 4.5 they must be added explicitly.
+        if (!class_exists(\core_ai\hook\after_ai_action_settings_form_hook::class)) {
+            $this->add_action_buttons();
+        }
+
         $this->set_data($this->actionconfig);
     }
 }

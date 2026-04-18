@@ -33,6 +33,13 @@ class helper {
      * @return array Array of model classes.
      */
     public static function get_model_classes(): array {
+        // core_ai\aimodel\base (and the predefined-models feature) was introduced
+        // in Moodle 5.0 (MDL-82980). Return an empty list on Moodle 4.x so that
+        // the model class files (which extend that base) are never autoloaded.
+        if (!class_exists(\core_ai\aimodel\base::class)) {
+            return [];
+        }
+
         $models = [];
         $modelclasses = \core_component::get_component_classes_in_namespace('aiprovider_sakuraaiengine', 'aimodel');
         foreach ($modelclasses as $class => $path) {

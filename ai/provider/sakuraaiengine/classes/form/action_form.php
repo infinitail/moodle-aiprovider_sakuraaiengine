@@ -112,8 +112,11 @@ class action_form extends action_settings_form {
             }
         }
 
-        // Validate the model.
-        if ($data['modeltemplate'] === 'custom' && empty($data['custommodel'])) {
+        // Validate the model (only when predefined model selection is available).
+        // On Moodle 4.5, modeltemplate is a free-text input, not a select, so
+        // 'custom' is never a valid sentinel value in that context.
+        if (class_exists(\core_ai\aimodel\base::class) &&
+                $data['modeltemplate'] === 'custom' && empty($data['custommodel'])) {
             $errors['custommodel'] = get_string('required');
         }
 
@@ -140,19 +143,37 @@ class action_form extends action_settings_form {
      */
     protected function add_model_fields(int $modeltype): void {
         $mform = $this->_form;
+        $predefinedmodels = $this->get_model_list($modeltype);
 
-        // Action model to use.
+        // On Moodle 4.5, core_ai\aimodel\base does not exist so get_model_list()
+        // returns only ['custom' => ...]. In that case fall back to a plain text
+        // input so users can still type the model name directly.
+        if (count($predefinedmodels) <= 1) {
+            $mform->addElement(
+                'text',
+                'modeltemplate',
+                get_string("action:{$this->actionname}:model", 'aiprovider_sakuraaiengine'),
+                ['size' => 50],
+            );
+            $mform->setType('modeltemplate', PARAM_TEXT);
+            $mform->addRule('modeltemplate', null, 'required', null, 'client');
+            $mform->setDefault('modeltemplate', $this->actionconfig['model'] ?? 'gpt-oss-120b');
+            $mform->addHelpButton('modeltemplate', "action:{$this->actionname}:model", 'aiprovider_sakuraaiengine');
+            return;
+        }
+
+        // Action model to use (Moodle 5.0+ predefined-model selector).
         $mform->addElement(
             'select',
             'modeltemplate',
             get_string("action:{$this->actionname}:model", 'aiprovider_sakuraaiengine'),
-            $this->get_model_list($modeltype),
+            $predefinedmodels,
             ['data-modelchooser-field' => 'selector'],
         );
         $mform->setType('modeltemplate', PARAM_TEXT);
         $mform->addRule('modeltemplate', null, 'required', null, 'client');
         if (!empty($this->actionconfig['model']) &&
-                (!array_key_exists($this->actionconfig['model'], $this->get_model_list($modeltype)) ||
+                (!array_key_exists($this->actionconfig['model'], $predefinedmodels) ||
                 !empty($this->actionconfig['modelextraparams']))) {
             $defaultmodel = 'custom';
         } else {

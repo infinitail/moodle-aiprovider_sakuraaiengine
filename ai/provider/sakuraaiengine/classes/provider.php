@@ -33,12 +33,18 @@ class provider extends \core_ai\provider {
      * @return array An array of action class names.
      */
     public static function get_action_list(): array {
-        return [
+        $actions = [
             \core_ai\aiactions\generate_text::class,
             //\core_ai\aiactions\generate_image::class,
             \core_ai\aiactions\summarise_text::class,
-            \core_ai\aiactions\explain_text::class,
         ];
+
+        // explain_text was added in Moodle 5.0 (MDL-82942). Skip on 4.x.
+        if (class_exists(\core_ai\aiactions\explain_text::class)) {
+            $actions[] = \core_ai\aiactions\explain_text::class;
+        }
+
+        return $actions;
     }
 
     #[\Override]
