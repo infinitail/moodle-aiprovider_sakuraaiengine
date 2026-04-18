@@ -52,6 +52,4 @@ if ($hassiteconfig) {
         new lang_string('account_token_help', 'aiprovider_sakuraaiengine'),
         '',
     ));
-
-    $ADMIN->add('aiprovider', $settings);
 }
