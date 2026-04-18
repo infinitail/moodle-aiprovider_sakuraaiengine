@@ -28,9 +28,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-// On Moodle 5.0+, after_ai_provider_form_hook provides the settings UI.
-// This file is not needed in that case.
-if (class_exists(\core_ai\hook\after_ai_provider_form_hook::class)) {
+global $CFG;
+
+// On Moodle 5.0+, provider settings are supplied via hook callbacks.
+if (!empty($CFG->version) && (int) $CFG->version >= 2025041400) {
     return;
 }
 

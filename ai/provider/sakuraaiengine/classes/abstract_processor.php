@@ -34,6 +34,35 @@ use Psr\Http\Message\UriInterface;
  */
 abstract class abstract_processor extends process_base {
     /**
+     * Get normalized action name from action class.
+     *
+     * @return string
+     */
+    protected function get_action_name(): string {
+        return substr($this->action::class, (strrpos($this->action::class, '\\') + 1));
+    }
+
+    /**
+     * Get current action settings from either 5.0 actionconfig or 4.5 plugin config.
+     *
+     * @return array
+     */
+    protected function get_action_settings(): array {
+        // Moodle 5.0+ stores per-action settings in provider actionconfig.
+        if (property_exists($this->provider, 'actionconfig')) {
+            return $this->provider->actionconfig[$this->action::class]['settings'] ?? [];
+        }
+
+        // Moodle 4.5 fallback: read action settings from plugin config.
+        $actionname = $this->get_action_name();
+        return [
+            'model' => (string) get_config('aiprovider_sakuraaiengine', "action_{$actionname}_model"),
+            'systeminstruction' => (string) get_config('aiprovider_sakuraaiengine', "action_{$actionname}_systeminstruction"),
+            'modelextraparams' => (string) get_config('aiprovider_sakuraaiengine', "action_{$actionname}_modelextraparams"),
+        ];
+    }
+
+    /**
      * Get the endpoint URI.
      *
      * @return UriInterface
@@ -63,7 +92,8 @@ abstract class abstract_processor extends process_base {
      * @return string
      */
     protected function get_model(): string {
-        return $this->provider->actionconfig[$this->action::class]['settings']['model'];
+        $settings = $this->get_action_settings();
+        return $settings['model'] ?? 'gpt-oss-120b';
     }
 
     /**
@@ -72,7 +102,7 @@ abstract class abstract_processor extends process_base {
      * @return array
      */
     protected function get_model_settings(): array {
-        $settings = $this->provider->actionconfig[$this->action::class]['settings'];
+        $settings = $this->get_action_settings();
         if (!empty($settings['modelextraparams'])) {
             // Custom model settings.
             $params = json_decode($settings['modelextraparams'], true);

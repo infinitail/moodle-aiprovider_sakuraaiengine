@@ -16,9 +16,6 @@
 
 namespace aiprovider_sakuraaiengine;
 
-use core_ai\hook\after_ai_action_settings_form_hook;
-use core_ai\hook\after_ai_provider_form_hook;
-
 /**
  * Hook listener for Sakura AI Engine Provider.
  *
@@ -31,9 +28,17 @@ class hook_listener {
     /**
      * Hook listener for the Sakura AI Engine instance setup form.
      *
-     * @param after_ai_provider_form_hook $hook The hook to add to the AI instance setup.
+     * @param object $hook The hook to add to the AI instance setup.
      */
-    public static function set_form_definition_for_aiprovider_sakuraaiengine(after_ai_provider_form_hook $hook): void {
+    public static function set_form_definition_for_aiprovider_sakuraaiengine(object $hook): void {
+        if (!compat::is_moodle_50_or_later()) {
+            return;
+        }
+
+        if (!property_exists($hook, 'plugin') || !property_exists($hook, 'mform')) {
+            return;
+        }
+
         if ($hook->plugin !== 'aiprovider_sakuraaiengine') {
             return;
         }
@@ -53,11 +58,19 @@ class hook_listener {
     /**
      * Hook listener for the Sakura AI Engine action settings form.
      *
-     * @param after_ai_action_settings_form_hook $hook The hook to add to config action settings.
+     * @param object $hook The hook to add to config action settings.
      */
     public static function set_model_form_definition_for_aiprovider_sakuraaiengine(
-        after_ai_action_settings_form_hook $hook
+        object $hook
     ): void {
+        if (!compat::is_moodle_50_or_later()) {
+            return;
+        }
+
+        if (!property_exists($hook, 'plugin') || !property_exists($hook, 'mform')) {
+            return;
+        }
+
         if ($hook->plugin !== 'aiprovider_sakuraaiengine') {
             return;
         }

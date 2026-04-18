@@ -26,6 +26,13 @@ defined('MOODLE_INTERNAL') || die();
 
 $callbacks = [];
 
+global $CFG;
+$ismoodle50orlater = !empty($CFG->version) && (int) $CFG->version >= 2025041400;
+
+if (!$ismoodle50orlater) {
+    return;
+}
+
 // after_ai_provider_form_hook is available when Moodle uses the hook-based
 // provider settings UI (Moodle 5.0+). On Moodle 4.x the settings are
 // defined in settings.php instead.

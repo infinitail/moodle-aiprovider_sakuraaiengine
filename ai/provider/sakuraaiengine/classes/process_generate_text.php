@@ -31,7 +31,8 @@ class process_generate_text extends abstract_processor {
 
     #[\Override]
     protected function get_system_instruction(): string {
-        return $this->provider->actionconfig[$this->action::class]['settings']['systeminstruction'];
+        $settings = $this->get_action_settings();
+        return $settings['systeminstruction'] ?? $this->action::get_system_instruction();
     }
 
     #[\Override]

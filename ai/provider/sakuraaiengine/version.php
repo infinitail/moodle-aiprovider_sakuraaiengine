@@ -26,5 +26,5 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'aiprovider_sakuraaiengine';
 $plugin->version  = 2025102702;
-$plugin->requires = 2024111800; // Moodle 4.5.0 (2024-11-18).
+$plugin->requires = 2024100700; // Moodle 4.5.0 or later.
 $plugin->maturity = MATURITY_ALPHA;
